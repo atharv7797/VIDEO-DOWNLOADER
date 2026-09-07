@@ -19,10 +19,12 @@ import tempfile
 import uuid
 
 from flask import Flask, request, jsonify, send_file, render_template
+from flask_cors import CORS
 
 import yt_dlp
 
 app = Flask(__name__)
+CORS(app)
 
 DOWNLOAD_DIR = os.path.join(tempfile.gettempdir(), "yt_downloader_tmp")
 os.makedirs(DOWNLOAD_DIR, exist_ok=True)
