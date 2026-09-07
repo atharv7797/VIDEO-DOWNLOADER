@@ -329,7 +329,7 @@ const res = await fetch(`https://video-downloader-72hv.onrender.com/api/info?url
     }finally{
       fetchBtn.disabled = false;
     }
-  });
+  }); 
 
   qualityRow.addEventListener('click', (e) => {
     const btn = e.target.closest('.q-btn');
