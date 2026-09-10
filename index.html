@@ -1,554 +1,251 @@
-<!DOCTYPE html>
+
+
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Mainframe – YouTube Downloader</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          fontFamily: {
-            sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
-          },
-        },
-      },
-    };
-  </script>
-  <style>
-    @keyframes blink {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0; }
-    }
-    .animate-blink { animation: blink 1s step-end infinite; }
-    @keyframes dropIn {
-      from { opacity: 0; transform: translateY(20px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    @keyframes bannerIn {
-      from { opacity: 0; max-height: 0; }
-      to { opacity: 1; max-height: 200px; }
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>YT Downloader</title>
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#08090d;--card:rgba(18,20,28,.88);--border:rgba(255,255,255,.09);
+  --text:#f5f7fb;--muted:#8f96a6;--accent:#ff3d5a;--accent2:#ff6a3d
+}
+body{
+  min-height:100vh;font-family:Inter,Arial,sans-serif;color:var(--text);
+  background:
+    radial-gradient(circle at 15% 10%,rgba(255,61,90,.14),transparent 28%),
+    radial-gradient(circle at 85% 85%,rgba(255,106,61,.11),transparent 30%),
+    var(--bg);
+  display:flex;justify-content:center;align-items:center;padding:28px;
+}
+.app{width:min(900px,100%)}
+.header{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px}
+.brand{display:flex;align-items:center;gap:14px}
+.brand-icon{
+  width:48px;height:48px;border-radius:14px;display:grid;place-items:center;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  box-shadow:0 10px 35px rgba(255,61,90,.25);font-size:20px
+}
+h1{font-size:23px;letter-spacing:-.4px}
+.brand p{color:var(--muted);margin-top:3px;font-size:13px}
+.status-dot{color:#a9b0bd;font-size:13px;display:flex;align-items:center;gap:7px}
+.status-dot span{width:8px;height:8px;border-radius:50%;background:#4ade80;box-shadow:0 0 12px rgba(74,222,128,.7)}
+.card{
+  background:var(--card);border:1px solid var(--border);border-radius:22px;
+  padding:28px;box-shadow:0 25px 80px rgba(0,0,0,.38);backdrop-filter:blur(18px)
+}
+.section-title{display:flex;justify-content:space-between;align-items:end;margin-bottom:22px}
+.section-title span{font-size:18px;font-weight:700}
+.section-title small{color:var(--muted);font-size:12px}
+label{display:block;font-size:12px;color:#b9bfca;margin-bottom:8px}
+.url-row{display:flex;gap:10px}
+input,select{
+  width:100%;height:48px;border:1px solid var(--border);border-radius:12px;
+  outline:none;color:var(--text);background:rgba(255,255,255,.045);
+  padding:0 14px;font-size:14px;transition:.2s
+}
+input:focus,select:focus{border-color:rgba(255,82,99,.65);box-shadow:0 0 0 3px rgba(255,61,90,.08)}
+select option{background:#171922}
+button{font-family:inherit}
+.paste-btn,#folderBtn{
+  border:1px solid var(--border);background:rgba(255,255,255,.06);color:#e9ecf2;
+  border-radius:12px;padding:0 18px;cursor:pointer;font-weight:600
+}
+.paste-btn:hover,#folderBtn:hover{background:rgba(255,255,255,.1)}
+.controls{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:18px}
+.folder-box{display:flex;gap:8px}
+.folder-box input{color:#9da5b3}
+.download-btn{
+  width:100%;height:52px;margin-top:22px;border:0;border-radius:13px;cursor:pointer;
+  color:white;font-size:14px;font-weight:800;
+  background:linear-gradient(100deg,var(--accent),var(--accent2));
+  box-shadow:0 12px 30px rgba(255,61,90,.22);transition:.18s
+}
+.download-btn:hover{transform:translateY(-1px);filter:brightness(1.08)}
+.download-btn:disabled{opacity:.65;cursor:not-allowed;transform:none}
+.download-icon{font-size:18px;margin-right:7px}
+.progress-area{margin-top:23px}
+.progress-info{display:flex;justify-content:space-between;color:var(--muted);font-size:12px;margin-bottom:9px}
+.progress-info strong{color:#e8ebf1}
+.progress-track{height:8px;background:rgba(255,255,255,.07);border-radius:99px;overflow:hidden}
+.progress-bar{
+  height:100%;width:0;border-radius:inherit;
+  background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .25s ease
+}
+.info-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:14px}
+.info-card{
+  display:flex;align-items:center;gap:12px;padding:15px;border:1px solid var(--border);
+  border-radius:15px;background:rgba(255,255,255,.025)
+}
+.info-card>span{font-size:20px}
+.info-card strong,.info-card small{display:block}
+.info-card strong{font-size:13px}
+.info-card small{color:var(--muted);font-size:11px;margin-top:3px}
+footer{text-align:center;color:#626978;font-size:11px;margin-top:18px}
+footer span{margin:0 3px}
+@media(max-width:650px){
+  body{padding:16px;align-items:flex-start}
+  .header{margin-top:8px}.status-dot{display:none}
+  .card{padding:20px;border-radius:18px}
+  .section-title{display:block}.section-title small{display:block;margin-top:5px}
+  .controls,.info-grid{grid-template-columns:1fr}
+  .url-row{flex-direction:column}.paste-btn{height:44px}
+}
+</style>
 </head>
+
 <body>
-  <div id="root"></div>
+<main class="app">
 
-  <script type="importmap">
-  {
-    "imports": {
-      "react": "https://esm.sh/react@18",
-      "react-dom/client": "https://esm.sh/react-dom@18/client",
-      "motion/react": "https://esm.sh/motion@1.12.18/react",
-      "lucide-react": "https://esm.sh/lucide-react"
-    }
+<header class="header">
+  <div class="brand">
+    <div class="brand-icon">▶</div>
+    <div>
+      <h1>YT Downloader</h1>
+      <p>Fast & simple video downloads</p>
+    </div>
+  </div>
+  <div class="status-dot"><span></span> Ready</div>
+</header>
+
+<section class="card">
+  <div class="section-title">
+    <span>Download video</span>
+    <small>Paste a YouTube link below</small>
+  </div>
+
+  <label for="url">YouTube URL</label>
+  <div class="url-row">
+    <input id="url" type="url" placeholder="https://www.youtube.com/watch?v=..." autocomplete="off">
+    <button class="paste-btn" id="pasteBtn">Paste</button>
+  </div>
+
+  <div class="controls">
+    <div class="field">
+      <label for="quality">Quality</label>
+      <select id="quality">
+        <option value="best">Best available (up to 1080p)</option>
+        <option value="1080">1080p + audio</option>
+        <option value="720">720p + audio</option>
+        <option value="480">480p + audio</option>
+        <option value="audio">Audio only (MP3)</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label for="folder">Save to</label>
+      <div class="folder-box">
+        <input id="folder" type="text" value="Downloads" readonly>
+        <button id="folderBtn">Browse</button>
+      </div>
+    </div>
+  </div>
+
+  <button class="download-btn" id="downloadBtn">
+    <span class="download-icon">↓</span> Start Download
+  </button>
+
+  <div class="progress-area">
+    <div class="progress-info">
+      <span id="status">Ready to download</span>
+      <strong id="percent">0%</strong>
+    </div>
+    <div class="progress-track">
+      <div class="progress-bar" id="progressBar"></div>
+    </div>
+  </div>
+</section>
+
+<section class="info-grid">
+  <div class="info-card"><span>⚡</span><div><strong>Fast</strong><small>Efficient downloads</small></div></div>
+  <div class="info-card"><span>🎥</span><div><strong>1080p</strong><small>High quality support</small></div></div>
+  <div class="info-card"><span>🎵</span><div><strong>MP3</strong><small>Audio-only option</small></div></div>
+</section>
+
+<footer>
+  <span>YT Downloader</span><span>•</span>
+  <span>Use only for content you have permission to download.</span>
+</footer>
+
+</main>
+
+<script>
+const urlInput=document.getElementById("url");
+const quality=document.getElementById("quality");
+const folder=document.getElementById("folder");
+const downloadBtn=document.getElementById("downloadBtn");
+const progressBar=document.getElementById("progressBar");
+const percent=document.getElementById("percent");
+const status=document.getElementById("status");
+
+document.getElementById("pasteBtn").addEventListener("click",async()=>{
+  try{
+    urlInput.value=await navigator.clipboard.readText();
+    status.textContent="Link pasted";
+  }catch{
+    urlInput.focus();
+    status.textContent="Paste the link into the box";
   }
-  </script>
+});
 
-  <script type="module">
-    import React, { useState, useEffect, useRef, useCallback } from 'react';
-    import { createRoot } from 'react-dom/client';
-    import { motion, AnimatePresence } from 'motion/react';
-    import { Check, ArrowRight, Link2, Loader2, Download, Menu, X } from 'lucide-react';
+document.getElementById("folderBtn").addEventListener("click",()=>{
+  status.textContent="Folder selection will be handled by the Python backend";
+});
 
-    /* ---------------------------------------------------------------- */
-    /*  Typewriter hook                                                  */
-    /* ---------------------------------------------------------------- */
-    function useTypewriter(text, speed = 38, startDelay = 600) {
-      const [displayed, setDisplayed] = useState("");
-      const [done, setDone] = useState(false);
+downloadBtn.addEventListener("click",async()=>{
+  const url=urlInput.value.trim();
 
-      useEffect(() => {
-        setDisplayed("");
-        setDone(false);
-        let i = 0;
-        let interval;
-        const delayId = setTimeout(() => {
-          interval = setInterval(() => {
-            i += 1;
-            setDisplayed(text.slice(0, i));
-            if (i >= text.length) {
-              clearInterval(interval);
-              setDone(true);
-            }
-          }, speed);
-        }, startDelay);
-        return () => { clearTimeout(delayId); clearInterval(interval); };
-      }, [text, speed, startDelay]);
+  if(!url){
+    status.textContent="Please paste a YouTube link first";
+    urlInput.focus();
+    return;
+  }
 
-      return { displayed, done };
+  /*
+    FRONTEND DEMO:
+    The real download requires your Python backend.
+    When your backend API is ready, replace this demo section with:
+
+    fetch("/api/download", {
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({
+        url:url,
+        quality:quality.value
+      })
+    });
+  */
+
+  downloadBtn.disabled=true;
+  progressBar.style.width="10%";
+  percent.textContent="10%";
+  status.textContent="Connecting to downloader...";
+
+  let value=10;
+
+  const timer=setInterval(()=>{
+    value+=Math.floor(Math.random()*12)+4;
+
+    if(value>=95){
+      value=95;
+      clearInterval(timer);
+      status.textContent="Waiting for Python backend...";
     }
 
-    /* ---------------------------------------------------------------- */
-    /*  Mock fetch                                                       */
-    /* ---------------------------------------------------------------- */
-    function mockFetchVideoInfo(url) {
-      return new Promise((resolve, reject) => {
-        setTimeout(() => {
-          const isPlausible = /youtu\.?be/i.test(url) && url.trim().length > 10;
-          if (!isPlausible) {
-            reject(new Error("That doesn't look like a YouTube link."));
-            return;
-          }
-          resolve({
-            title: "Sample video title goes here",
-            duration: "6:42",
-            formats: [
-              { id: "360p", label: "360p", audio: true },
-              { id: "480p", label: "480p", audio: true },
-              { id: "720p", label: "720p", audio: true },
-              { id: "1080p", label: "1080p", audio: true },
-            ],
-          });
-        }, 900);
-      });
-    }
+    progressBar.style.width=value+"%";
+    percent.textContent=value+"%";
+  },450);
 
-    /* ---------------------------------------------------------------- */
-    /*  Navbar                                                           */
-    /* ---------------------------------------------------------------- */
-    function Navbar() {
-      const [open, setOpen] = useState(false);
-      const links = ["Labs", "Studio", "Openings", "Shop"];
-
-      return (
-        <>
-          <header className="fixed top-0 inset-x-0 z-10 px-5 sm:px-8 py-4 sm:py-5 flex flex-row justify-between items-center bg-transparent">
-            {/* Logo */}
-            <div className="flex flex-row items-center gap-3 select-none">
-              <span className="text-[21px] sm:text-[26px] tracking-tight text-black font-medium">
-                Mainframe&reg;
-              </span>
-              <span className="text-[25px] sm:text-[30px] text-black select-none tracking-[-0.02em] font-medium leading-none mb-1">
-                &#10033;
-              </span>
-            </div>
-
-            {/* Desktop Nav Links */}
-            <nav className="hidden md:flex flex-row items-center text-[23px] text-black">
-              {links.map((link, i) => (
-                <React.Fragment key={link}>
-                  <a href="#" className="hover:opacity-60 transition-opacity">{link}</a>
-                  {i < links.length - 1 && <span className="opacity-40">,&nbsp;</span>}
-                </React.Fragment>
-              ))}
-            </nav>
-
-            {/* Desktop CTA */}
-            <a href="#" className="hidden md:inline text-[23px] text-black underline underline-offset-2 hover:opacity-60 transition-opacity">
-              Get in touch
-            </a>
-
-            {/* Mobile Hamburger */}
-            <button
-              className="md:hidden flex flex-col justify-center items-center gap-[2px] w-6 h-6"
-              onClick={() => setOpen((o) => !o)}
-              aria-label="Toggle menu"
-            >
-              <span className={`w-6 h-[2px] bg-black transition-all duration-300 ${open ? "rotate-45 translate-y-[7px]" : ""}`} />
-              <span className={`w-6 h-[2px] bg-black transition-all duration-300 ${open ? "opacity-0" : ""}`} />
-              <span className={`w-6 h-[2px] bg-black transition-all duration-300 ${open ? "-rotate-45 -translate-y-[7px]" : ""}`} />
-            </button>
-          </header>
-
-          {/* Mobile Overlay */}
-          <div
-            className={`fixed inset-0 z-[9] bg-white/95 backdrop-blur-sm transition-opacity duration-300 flex flex-col items-center justify-center gap-8 ${
-              open ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
-            }`}
-          >
-            {links.map((link) => (
-              <a key={link} href="#" className="text-2xl text-black" onClick={() => setOpen(false)}>{link}</a>
-            ))}
-            <a href="#" className="text-2xl text-black underline underline-offset-2" onClick={() => setOpen(false)}>Get in touch</a>
-          </div>
-        </>
-      );
-    }
-
-    /* ---------------------------------------------------------------- */
-    /*  Background Video Component                                       */
-    /* ---------------------------------------------------------------- */
-    function BackgroundVideo() {
-      const videoRef = useRef(null);
-
-      useEffect(() => {
-        const video = videoRef.current;
-        if (!video) return;
-
-        if (window.innerWidth < 1024) {
-          video.autoplay = true;
-          video.play().catch(() => {});
-          return;
-        }
-
-        let prevX = 0;
-        let isScrubbing = false;
-
-        const handleMouseMove = (e) => {
-          if (window.innerWidth < 1024) return;
-          const currentX = e.clientX;
-          const delta = currentX - prevX;
-          prevX = currentX;
-
-          const targetTime = (delta / window.innerWidth) * 0.8 * video.duration;
-          const clampedTime = Math.max(0, Math.min(targetTime, video.duration));
-          video.currentTime = clampedTime;
-        };
-
-        const handleSeeked = () => {
-          if (window.innerWidth >= 1024) {
-            prevX = window.innerWidth / 2;
-          }
-        };
-
-        window.addEventListener('mousemove', handleMouseMove);
-        video.addEventListener('seeked', handleSeeked);
-
-        return () => {
-          window.removeEventListener('mousemove', handleMouseMove);
-          video.removeEventListener('seeked', handleSeeked);
-        };
-      }, []);
-
-      return (
-        <div className="order-last lg:order-none relative lg:absolute lg:inset-0 lg:z-0 overflow-hidden pointer-events-none w-full aspect-square md:aspect-video lg:aspect-auto lg:h-full bg-neutral-50 lg:bg-transparent">
-          <video
-            ref={videoRef}
-            muted
-            playsInline
-            preload="auto"
-            src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260601_110537_3a579fa0-7bbc-4d94-9d25-0e816c7840f5.mp4"
-            className="w-full h-full object-cover object-right lg:object-right-bottom"
-          />
-        </div>
-      );
-    }
-
-    /* ---------------------------------------------------------------- */
-    /*  Format Pill                                                      */
-    /* ---------------------------------------------------------------- */
-    function FormatPill({ format, active, onToggle }) {
-      return (
-        <motion.button
-          onClick={() => onToggle(format.id)}
-          className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-full text-[15px] border transition-all duration-200 ${
-            active
-              ? "bg-[#1C2E1E] text-white shadow-md shadow-emerald-950/5"
-              : "bg-white text-[#1C2E1E] border border-[#F1F3F1] hover:bg-[#F1F3F1]/55"
-          }`}
-          whileTap={{ scale: 0.97 }}
-        >
-          <span className={`grid place-items-center w-4 h-4 rounded-full transition-transform duration-200 ${active ? "scale-100" : "scale-0 w-0"}`}>
-            {active && (
-              <motion.span
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                transition={{ type: "spring", stiffness: 300, damping: 20 }}
-              >
-                <Check size={14} strokeWidth={2.5} />
-              </motion.span>
-            )}
-          </span>
-          {format.label}
-          <span className={active ? "opacity-70" : "opacity-50"}>· audio</span>
-        </motion.button>
-      );
-    }
-
-    /* ---------------------------------------------------------------- */
-    /*  Service Pills + Banner                                           */
-    /* ---------------------------------------------------------------- */
-    function ServiceSection() {
-      const [services, setServices] = useState(["Brand", "Digital", "Campaign", "Other"]);
-      const [selected, setSelected] = useState([]);
-
-      const toggleService = (id) => {
-        setSelected((prev) =>
-          prev.includes(id) ? prev.filter((s) => s !== id) : [...prev, id]
-        );
-      };
-
-      return (
-        <div>
-          <h2 className="text-2xl font-medium tracking-tight mb-2 text-black">
-            What sort of service?
-          </h2>
-          <p className="opacity-85 text-[#738273] mb-8">
-            Select all that apply
-          </p>
-          <div className="flex flex-wrap gap-3 mb-4">
-            {services.map((service) => (
-              <FormatPill
-                key={service}
-                format={{ id: service, label: service, audio: false }}
-                active={selected.includes(service)}
-                onToggle={toggleService}
-              />
-            ))}
-          </div>
-          <AnimatePresence mode="wait">
-            {selected.length === 0 ? (
-              <motion.p
-                key="placeholder"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 0.5 }}
-                exit={{ opacity: 0 }}
-                className="text-xs italic text-black"
-              >
-                Please click to select services above.
-              </motion.p>
-            ) : (
-              <motion.div
-                key="banner"
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: "auto" }}
-                exit={{ opacity: 0, height: 0 }}
-                transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                className="flex items-center justify-between gap-4 bg-[#FAFBF9] border border-[#F1F3F1] rounded-2xl px-5 py-4"
-              >
-                <p className="text-[15px] text-black">
-                  Ready to inquire about: {selected.join(", ")}
-                </p>
-                <button className="flex items-center gap-1.5 text-[#4D6D47] uppercase text-xs font-medium tracking-wide hover:opacity-70 transition-opacity">
-                  Let's Go <ArrowRight size={14} />
-                </button>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
-      );
-    }
-
-    /* ---------------------------------------------------------------- */
-    /*  Main App                                                         */
-    /* ---------------------------------------------------------------- */
-    function App() {
-      const { displayed, done } = useTypewriter("we'd love to\nhear from you!");
-      const [url, setUrl] = useState("");
-      const [status, setStatus] = useState("idle");
-      const [errorMsg, setErrorMsg] = useState("");
-      const [info, setInfo] = useState(null);
-      const [selectedFormats, setSelectedFormats] = useState([]);
-      const videoRef = useRef(null);
-
-      const handleFetch = async (e) => {
-        e.preventDefault();
-        if (!url.trim()) return;
-        setStatus("loading");
-        setSelectedFormats([]);
-        try {
-          const data = await mockFetchVideoInfo(url);
-          setInfo(data);
-          setStatus("ready");
-        } catch (err) {
-          setErrorMsg(err.message);
-          setStatus("error");
-        }
-      };
-
-      const toggleFormat = (id) => {
-        setSelectedFormats((prev) =>
-          prev.includes(id) ? prev.filter((f) => f !== id) : [...prev, id]
-        );
-      };
-
-      const handleDownloadAll = () => {
-        alert(`Would queue ${selectedFormats.length} download${selectedFormats.length > 1 ? "s" : ""}: ${selectedFormats.join(", ")}\n\n(Hook this up to your own backend.)`);
-      };
-
-      /* Desktop mouse scrubbing for background video */
-      useEffect(() => {
-        const video = videoRef.current;
-        if (!video || window.innerWidth < 1024) return;
-
-        let prevX = 0;
-        const handleMouseMove = (e) => {
-          const currentX = e.clientX;
-          const delta = currentX - prevX;
-          prevX = currentX;
-          const targetTime = (delta / window.innerWidth) * 0.8 * video.duration;
-          const clampedTime = Math.max(0, Math.min(targetTime, video.duration));
-          video.currentTime = clampedTime;
-        };
-        const handleSeeked = () => { prevX = window.innerWidth / 2; };
-
-        window.addEventListener('mousemove', handleMouseMove);
-        video.addEventListener('seeked', handleSeeked);
-        return () => {
-          window.removeEventListener('mousemove', handleMouseMove);
-          video.removeEventListener('seeked', handleSeeked);
-        };
-      }, []);
-
-      /* Mobile autoplay */
-      useEffect(() => {
-        const video = videoRef.current;
-        if (!video || window.innerWidth >= 1024) return;
-        video.autoplay = true;
-        video.play().catch(() => {});
-      }, []);
-
-      return (
-        <div className="relative bg-white text-neutral-900 font-sans selection:bg-[#EAECE9] selection:text-[#1C2E1E] antialiased overflow-x-hidden flex flex-col lg:block lg:min-h-screen">
-          {/* Background Video */}
-          <div className="order-last lg:order-none relative lg:absolute lg:inset-0 lg:z-0 overflow-hidden pointer-events-none w-full aspect-square md:aspect-video lg:aspect-auto lg:h-full bg-neutral-50 lg:bg-transparent">
-            <video
-              ref={videoRef}
-              muted
-              playsInline
-              preload="auto"
-              src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260601_110537_3a579fa0-7bbc-4d94-9d25-0e816c7840f5.mp4"
-              className="w-full h-full object-cover object-right lg:object-right-bottom"
-            />
-          </div>
-
-          {/* Navbar */}
-          <Navbar />
-
-          {/* Content */}
-          <div className="relative z-10 flex flex-col order-first lg:order-none w-full bg-white lg:bg-transparent pb-8 lg:pb-0 lg:min-h-screen">
-            <main id="spade-hero" className="w-full max-w-7xl mx-auto px-6 py-12 flex-1 flex flex-col justify-center">
-              {/* Headline */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6 }}
-              >
-                <h1 className="text-5xl md:text-6xl lg:text-[76px] font-normal tracking-tight text-black leading-[1.08] mb-8 select-none w-full whitespace-pre-wrap">
-                  {displayed}
-                  {!done && (
-                    <span className="inline-block w-[2px] h-[1.1em] bg-black align-middle ml-[2px] animate-blink" />
-                  )}
-                </h1>
-              </motion.div>
-
-              {/* Secondary description */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.1 }}
-              >
-                <p className="text-lg md:text-xl text-[#5A635A] leading-relaxed font-normal mb-14 max-w-2xl">
-                  Whether you have questions, feedback, <br /> drop us a message and we'll get back to you as soon as possible.
-                </p>
-              </motion.div>
-
-              {/* URL Input */}
-              <form onSubmit={handleFetch} className="mb-10">
-                <div className="flex items-center gap-3 bg-white border border-[#E7E9E3] rounded-2xl px-4 py-3 focus-within:border-[#1C2E1E] transition-colors">
-                  <Link2 size={18} className="text-[#738273] shrink-0" />
-                  <input
-                    type="text"
-                    value={url}
-                    onChange={(e) => setUrl(e.target.value)}
-                    placeholder="https://youtube.com/watch?v=..."
-                    className="flex-1 bg-transparent outline-none text-[16px] placeholder:text-[#9AA39A]"
-                  />
-                  <button
-                    type="submit"
-                    disabled={status === "loading"}
-                    className="flex items-center gap-1.5 bg-[#1C2E1E] text-white text-[15px] px-4 py-2 rounded-xl hover:opacity-90 transition-opacity disabled:opacity-60"
-                  >
-                    {status === "loading" ? (
-                      <><Loader2 size={15} className="animate-spin" /> Fetching</>
-                    ) : (
-                      "Fetch"
-                    )}
-                  </button>
-                </div>
-                {status === "error" && (
-                  <p className="mt-2 text-sm text-[#B0432E]">{errorMsg}</p>
-                )}
-              </form>
-
-              {/* Results */}
-              <AnimatePresence>
-                {status === "ready" && info && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.4 }}
-                  >
-                    <div className="flex items-start gap-4 mb-8 pb-6 border-b border-[#E7E9E3]">
-                      <div className="w-24 h-16 rounded-lg bg-[#E7E9E3] shrink-0" />
-                      <div>
-                        <p className="font-medium text-black mb-1">{info.title}</p>
-                        <p className="text-sm text-[#738273]">{info.duration}</p>
-                      </div>
-                    </div>
-
-                    <h2 className="text-2xl font-medium tracking-tight mb-2 text-black">
-                      Which quality?
-                    </h2>
-                    <p className="opacity-85 text-[#738273] mb-6">
-                      Select as many as you'd like to queue up
-                    </p>
-
-                    <div className="flex flex-wrap gap-3 mb-6">
-                      {info.formats.map((format) => (
-                        <FormatPill
-                          key={format.id}
-                          format={format}
-                          active={selectedFormats.includes(format.id)}
-                          onToggle={toggleFormat}
-                        />
-                      ))}
-                    </div>
-
-                    <AnimatePresence mode="wait">
-                      {selectedFormats.length === 0 ? (
-                        <motion.p
-                          key="placeholder"
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: 0.5 }}
-                          exit={{ opacity: 0 }}
-                          className="text-xs italic opacity-50"
-                        >
-                          Please click to select formats above.
-                        </motion.p>
-                      ) : (
-                        <motion.div
-                          key="banner"
-                          initial={{ opacity: 0, height: 0 }}
-                          animate={{ opacity: 1, height: "auto" }}
-                          exit={{ opacity: 0, height: 0 }}
-                          transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                          className="flex items-center justify-between gap-4 bg-[#FAFBF9] border border-[#F1F3F1] rounded-2xl px-5 py-4 flex-wrap"
-                        >
-                          <p className="text-[15px] text-black">
-                            Queued: {selectedFormats.join(", ")}
-                          </p>
-                          <button
-                            onClick={handleDownloadAll}
-                            className="flex items-center gap-1.5 text-[#4D6D47] uppercase text-xs font-medium tracking-wide hover:opacity-70 transition-opacity"
-                          >
-                            Let's Go <ArrowRight size={14} />
-                          </button>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-
-              {/* Service Pills Section */}
-              <div className="mt-16">
-                <ServiceSection />
-              </div>
-            </main>
-          </div>
-        </div>
-      );
-    }
-
-    const root = createRoot(document.getElementById("root"));
-    root.render(<App />);
-  </script>
+  setTimeout(()=>{
+    clearInterval(timer);
+    progressBar.style.width="0%";
+    percent.textContent="0%";
+    status.textContent="Frontend ready — connect your Python backend to start real downloads.";
+    downloadBtn.disabled=false;
+  },5000);
+});
+</script>
 </body>
 </html>
