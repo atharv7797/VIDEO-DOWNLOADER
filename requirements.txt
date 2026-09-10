@@ -1,0 +1,5 @@
+```text
+fastapi
+uvicorn[standard]
+yt-dlp[default]
+```
